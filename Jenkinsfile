@@ -1,7 +1,13 @@
 pipeline {
-    agent any 
+    agent any
     stages {
-       stage('Test') {
+        stage('Build') {  // Build doit être en premier
+            steps {
+                sh 'python -m py_compile sources/add2vals.py sources/calc.py'
+                stash(name: 'compiled-results', includes: 'sources/*.py*')
+            }
+        }
+        stage('Test') {  // Test vient après
             steps {
                 sh 'py.test --junit-xml test-reports/results.xml sources/test_calc.py'
             }
@@ -9,11 +15,6 @@ pipeline {
                 always {
                     junit 'test-reports/results.xml'
                 }
-            }
-        } stage('Build') { 
-            steps {
-                sh 'python -m py_compile sources/add2vals.py sources/calc.py' 
-                stash(name: 'compiled-results', includes: 'sources/*.py*') 
             }
         }
     }
